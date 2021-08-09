@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal SonicWALL</title>
+</head>
+<body>
+    {% for uriListName in uriLists['uri_list_object'] %}
+        <h1>{{uriListName['name']}}</h1>
+        {% for uri in uriListName['uri'] %}
+            <p>{{uri['uri']}}</p>
+        {% endfor %}
+    {% endfor %}
+    </select>
+</body>
+</html>
