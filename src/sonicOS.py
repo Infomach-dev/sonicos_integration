@@ -34,6 +34,13 @@ def logout(sonicIP: str):
 
     return response.status_code
 
+def configMode(sonicIP: str):
+    url = f"https://{sonicIP}/api/sonicos/config-mode"
+    payload = ""
+    response = requests.request("POST", url, headers=headers, data=payload, verify=False)
+
+    return response.status_code
+
 def commitChanges(sonicIP: str):
     url = f"https://{sonicIP}/api/sonicos/config/pending"
     payload = ""

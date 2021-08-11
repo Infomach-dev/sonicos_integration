@@ -44,11 +44,18 @@ def logoutFromAPI():
     else:
         return PlainTextResponse(f"Error {response}")
 
-@app.post("/insertcfs/")
+@app.post("/insertcfs")
 def form_post(request: Request, cfsProfile: str = Form(...), uriToAdd: str = Form(...)):
     response = insertIntoCFS(sonicIP, cfsProfile, uriToAdd)
 
+    print(commitChanges(sonicIP))
     if response == 200:
         return PlainTextResponse("Liberação realizada com sucesso!")
     else:
         return PlainTextResponse(f"Error {response}")
+
+@app.get("/configmode")
+def preemptMode(request: Request):
+    response = configMode(sonicIP)
+    return PlainTextResponse(print(response))
+
