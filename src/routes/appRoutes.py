@@ -20,15 +20,35 @@ def index(request: Request):
 
 @app.get("/showcfslists")
 def showLists(request: Request):
-    uriLists = getCFSLists(sonicIP)
-    return templates.TemplateResponse("show_uri_list.html", {"request": request, "uriLists": uriLists})
+    response = getCFSLists(sonicIP)
 
-@app.post("/login")
+    if type(response) == int:
+        return PlainTextResponse(f"Error {response}")
+    else:
+        return templates.TemplateResponse("show_uri_list.html", {"request": request, "uriLists": response})
+
+@app.get("/login")
 def loginToAPI(): 
-    login(sonicIP)
+    response = login(sonicIP)
+    if response == 200:
+        return PlainTextResponse("Logado com sucesso!")
+    else:
+        return PlainTextResponse(f"Error {response}")
+
+@app.get("/logout")
+def logoutFromAPI():
+    response = logout(sonicIP)
+
+    if response == 200:
+        return PlainTextResponse("Logout realizado com sucesso!")
+    else:
+        return PlainTextResponse(f"Error {response}")
 
 @app.post("/insertcfs/")
 def form_post(request: Request, cfsProfile: str = Form(...), uriToAdd: str = Form(...)):
-    insertIntoCFS(sonicIP, cfsProfile, uriToAdd)
-    commitChanges(sonicIP)
-    return PlainTextResponse("Liberação realizada com sucesso!")
+    response = insertIntoCFS(sonicIP, cfsProfile, uriToAdd)
+
+    if response == 200:
+        return PlainTextResponse("Liberação realizada com sucesso!")
+    else:
+        return PlainTextResponse(f"Error {response}")

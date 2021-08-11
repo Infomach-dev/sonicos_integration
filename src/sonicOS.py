@@ -23,13 +23,23 @@ def login(sonicIP: str):
          ])
 
     response = requests.request("POST", url, data=payload, headers=headers, verify=False)
-    return response
+
+    return response.status_code
+
+def logout(sonicIP: str):
+    url = f"https://{sonicIP}/api/sonicos/auth"
+    payload = ""
+
+    response = requests.request("DELETE", url, data=payload, headers=headers, verify=False)
+
+    return response.status_code
 
 def commitChanges(sonicIP: str):
     url = f"https://{sonicIP}/api/sonicos/config/pending"
     payload = ""
     response = requests.request("POST", url, headers=headers, data=payload, verify=False)
-    return response
+    
+    return response.status_code
 
 def getCFSProfiles(sonicIP: str):
     url = f"https://{sonicIP}/api/sonicos/content-filter/profiles"
@@ -40,16 +50,22 @@ def getCFSProfiles(sonicIP: str):
     cfsProfilesList = json.loads(cfsProfilesList)
 
     # print(cfsProfilesList['profile'][0]['name'])
-    return cfsProfilesList
+    if response.status_code == 200:
+        return cfsProfilesList
+    else: 
+        return response.status_code
 
 def getCFSLists(sonicIP: str):
     url = f"https://{sonicIP}/api/sonicos/content-filter/uri-list-objects"
     payload = ""
     response = requests.request("GET", url, headers=headers, data=payload, verify=False)
-    response = response.json()
-    response = json.dumps(response['content_filter'], indent=4)
-    response = json.loads(response)
-    return response
+    if response.status_code == 200:
+        cfsLists = response.json()
+        cfsLists = json.dumps(cfsLists['content_filter'], indent=4)
+        cfsLists = json.loads(cfsLists)
+        return cfsLists
+    else: 
+        return response.status_code
 
 def insertIntoCFS(sonicIP: str, cfsName: str, uri: str):
     url = f"https://{sonicIP}/api/sonicos/content-filter/uri-list-objects"
@@ -61,20 +77,5 @@ def insertIntoCFS(sonicIP: str, cfsName: str, uri: str):
     ]}}
 
     response = requests.request("PUT", url, json=payload, headers=headers, verify=False)
-    response = response.json()
-    response = json.dumps(response['status'], indent=4)
-    response = json.loads(response)
-    message = response['info'][0]['message']
 
-    # translating the messages
-    if (response['success'] == False):
-         if (message == "Already exists."):
-             translatedMessage = "Esse site já foi liberado!"
-             return translatedMessage
-         else: return message
-
-    if (response['success'] == True):
-        if (message == "Success."):
-            translatedMessage = "Site liberado com sucesso!"
-            return translatedMessage
-        else: return message
+    return response.status_code
