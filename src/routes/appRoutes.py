@@ -1,3 +1,4 @@
+from requests.api import get
 from starlette.responses import PlainTextResponse, RedirectResponse
 from sonicOS import * 
 from fastapi import FastAPI
@@ -16,7 +17,8 @@ sonicIP = "192.168.1.250"
 
 @app.get("/")
 def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    response = getCFSLists(sonicIP)
+    return templates.TemplateResponse("index.html", {"request": request, "uriLists": response})
 
 @app.get("/showcfslists")
 def showLists(request: Request):
@@ -57,5 +59,5 @@ def form_post(request: Request, cfsProfile: str = Form(...), uriToAdd: str = For
 @app.get("/configmode")
 def preemptMode(request: Request):
     response = configMode(sonicIP)
-    return PlainTextResponse(print(response))
+    return PlainTextResponse(response)
 
