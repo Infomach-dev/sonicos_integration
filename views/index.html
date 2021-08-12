@@ -9,7 +9,11 @@
 <body>
     <form method="POST" action="/insertcfs">
         <label for="cfsProfile">Para qual nível deseja a liberação?</label> <br>
-        <input type="text" name="cfsProfile" id="cfsProfile" placeholder="CFS Baixa"> <br>
+        <select name=cfslistNames>
+        {% for uriListName in uriLists['uri_list_object'] %}
+            <option> {{uriListName['name']}}
+        {% endfor %}
+        </select> <br>
 
         <label for="uriToAdd">Qual o domínio do site a ser liberado?</label> <br>
         <input type="text" name="uriToAdd" id="uriToAdd" placeholder="infomach.com.br"> <br>
