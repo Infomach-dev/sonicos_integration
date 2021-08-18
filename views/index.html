@@ -7,9 +7,9 @@
     <title>Portal SonicWALL</title>
 </head>
 <body>
-    <form method="POST" action="/insertcfs">
+    <form method="POST" action="/addtolist">
         <label for="cfsProfile">Para qual nível deseja a liberação?</label> <br>
-        <select name=cfslistNames>
+        <select name=cfsListNames id="cfsListNames">
         {% for uriListName in uriLists['uri_list_object'] %}
             <option> {{uriListName['name']}}
         {% endfor %}

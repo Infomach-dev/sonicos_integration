@@ -46,11 +46,12 @@ def logoutFromAPI():
     else:
         return PlainTextResponse(f"Error {response}")
 
-@app.post("/insertcfs")
+@app.post("/addtolist")
 def form_post(request: Request, cfsListNames: str = Form(...), uriToAdd: str = Form(...)):
     response = insertIntoCFS(sonicIP, cfsListNames, uriToAdd)
-    
-    commitChanges(sonicIP)
+
+    if response.status_code == 200:
+       response = commitChanges(sonicIP)
 
     if response.status_code == 200:
         return PlainTextResponse("Liberação realizada com sucesso!")
