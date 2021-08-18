@@ -86,3 +86,17 @@ def insertIntoCFS(sonicIP: str, cfsName: str, uri: str):
     response = requests.request("PUT", url, json=payload, headers=headers, verify=False)
 
     return response
+
+def removeFromCFS(sonicIP: str, cfsName: str, uri: str):
+    url = f"https://{sonicIP}/api/sonicos/content-filter/uri-list-objects"
+
+    payload = {"content_filter": {"uri_list_object": [
+                {
+                    "name": cfsName,
+                    "uri": [{"uri": uri}]
+                }
+            ]}}
+
+    response = requests.request("DELETE", url, json=payload, headers=headers, verify=False)
+
+    return response

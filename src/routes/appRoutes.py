@@ -25,7 +25,7 @@ def showLists(request: Request):
     response = getCFSLists(sonicIP)
 
     if type(response) == int:
-        return PlainTextResponse(f"Error {response}")
+        return PlainTextResponse(f"Error {response.text}")
     else:
         return templates.TemplateResponse("show_uri_list.html", {"request": request, "uriLists": response})
 
@@ -41,14 +41,26 @@ def loginToAPI():
 def logoutFromAPI():
     response = logout(sonicIP)
 
-    if response == 200:
+    if response.status_code == 200:
         return PlainTextResponse("Logout realizado com sucesso!")
     else:
-        return PlainTextResponse(f"Error {response}")
+        return PlainTextResponse(f"Error {response.text}")
 
 @app.post("/addtolist")
-def form_post(request: Request, cfsListNames: str = Form(...), uriToAdd: str = Form(...)):
+def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = Form(...)):
     response = insertIntoCFS(sonicIP, cfsListNames, uriToAdd)
+
+    if response.status_code == 200:
+       response = commitChanges(sonicIP)
+
+    if response.status_code == 200:
+        return RedirectResponse(url="/showcfslists", status_code=303)
+    else:
+        return PlainTextResponse(f"Error {response.text}")
+
+@app.post("/removefromlist")
+def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...)):
+    response = removeFromCFS(sonicIP, cfsListName, uriToDel)
 
     if response.status_code == 200:
        response = commitChanges(sonicIP)
