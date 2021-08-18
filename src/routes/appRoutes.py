@@ -54,7 +54,7 @@ def form_post(request: Request, cfsListNames: str = Form(...), uriToAdd: str = F
        response = commitChanges(sonicIP)
 
     if response.status_code == 200:
-        return PlainTextResponse("Liberação realizada com sucesso!")
+        return RedirectResponse(url="/showcfslists", status_code=303)
     else:
         return PlainTextResponse(f"Error {response.text}")
 
