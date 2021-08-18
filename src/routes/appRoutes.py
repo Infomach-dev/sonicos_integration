@@ -32,10 +32,10 @@ def showLists(request: Request):
 @app.get("/login")
 def loginToAPI(): 
     response = login(sonicIP)
-    if response == 200:
+    if response.status_code == 200:
         return PlainTextResponse("Logado com sucesso!")
     else:
-        return PlainTextResponse(f"Error {response}")
+        return PlainTextResponse(f"Error: {response.text}")
 
 @app.get("/logout")
 def logoutFromAPI():
@@ -47,17 +47,18 @@ def logoutFromAPI():
         return PlainTextResponse(f"Error {response}")
 
 @app.post("/insertcfs")
-def form_post(request: Request, cfsProfile: str = Form(...), uriToAdd: str = Form(...)):
-    response = insertIntoCFS(sonicIP, cfsProfile, uriToAdd)
+def form_post(request: Request, cfsListNames: str = Form(...), uriToAdd: str = Form(...)):
+    response = insertIntoCFS(sonicIP, cfsListNames, uriToAdd)
+    
+    commitChanges(sonicIP)
 
-    print(commitChanges(sonicIP))
-    if response == 200:
+    if response.status_code == 200:
         return PlainTextResponse("Liberação realizada com sucesso!")
     else:
-        return PlainTextResponse(f"Error {response}")
+        return PlainTextResponse(f"Error {response.text}")
 
 @app.get("/configmode")
 def preemptMode(request: Request):
     response = configMode(sonicIP)
-    return PlainTextResponse(response)
+    return PlainTextResponse(response.text)
 

@@ -24,7 +24,7 @@ def login(sonicIP: str):
 
     response = requests.request("POST", url, data=payload, headers=headers, verify=False)
 
-    return response.status_code
+    return response
 
 def logout(sonicIP: str):
     url = f"https://{sonicIP}/api/sonicos/auth"
@@ -32,21 +32,21 @@ def logout(sonicIP: str):
 
     response = requests.request("DELETE", url, data=payload, headers=headers, verify=False)
 
-    return response.status_code
+    return response
 
 def configMode(sonicIP: str):
     url = f"https://{sonicIP}/api/sonicos/config-mode"
     payload = ""
     response = requests.request("POST", url, headers=headers, data=payload, verify=False)
 
-    return response.status_code
+    return response
 
 def commitChanges(sonicIP: str):
     url = f"https://{sonicIP}/api/sonicos/config/pending"
     payload = ""
     response = requests.request("POST", url, headers=headers, data=payload, verify=False)
     
-    return response.status_code
+    return response
 
 def getCFSProfiles(sonicIP: str):
     url = f"https://{sonicIP}/api/sonicos/content-filter/profiles"
@@ -60,7 +60,7 @@ def getCFSProfiles(sonicIP: str):
     if response.status_code == 200:
         return cfsProfilesList
     else: 
-        return response.status_code
+        return response
 
 def getCFSLists(sonicIP: str):
     url = f"https://{sonicIP}/api/sonicos/content-filter/uri-list-objects"
@@ -72,7 +72,7 @@ def getCFSLists(sonicIP: str):
         cfsLists = json.loads(cfsLists)
         return cfsLists
     else: 
-        return response.status_code
+        return response
 
 def insertIntoCFS(sonicIP: str, cfsName: str, uri: str):
     url = f"https://{sonicIP}/api/sonicos/content-filter/uri-list-objects"
@@ -85,4 +85,4 @@ def insertIntoCFS(sonicIP: str, cfsName: str, uri: str):
 
     response = requests.request("PUT", url, json=payload, headers=headers, verify=False)
 
-    return response.status_code
+    return response
