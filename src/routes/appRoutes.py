@@ -1,4 +1,3 @@
-from requests.api import get
 from starlette.responses import PlainTextResponse, RedirectResponse
 from sonicOS import * 
 from fastapi import FastAPI
@@ -48,6 +47,20 @@ def logoutFromAPI():
 
 @app.post("/addtolist")
 def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = Form(...)):
+    # remove protocol from urls
+    if uriToAdd.find("htt") != -1:
+        cleanUri = uriToAdd.split('//')
+        if cleanUri[0].find('http') != -1:
+            cleanUri.pop(0)
+            uriToAdd = ".".join(cleanUri)
+
+    # remove www subdomain from urls
+    if uriToAdd.find('ww') != -1:
+        cleanUri = uriToAdd.split('.')
+        if cleanUri[0].find('ww') != -1:
+            cleanUri.pop(0)
+            uriToAdd = ".".join(cleanUri)
+
     response = insertIntoCFS(sonicIP, cfsListNames, uriToAdd)
 
     if response.status_code == 200:
