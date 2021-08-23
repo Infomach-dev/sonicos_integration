@@ -1,7 +1,7 @@
 from starlette.responses import PlainTextResponse, RedirectResponse
 from sonicOS import * 
 from fastapi import FastAPI
-from fastapi.params import Form
+from fastapi.params import Form, Path
 from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -23,7 +23,16 @@ def index(request: Request):
 def showLists(request: Request):
     response = getCFSLists(sonicIP)
 
-    if type(response) == int:
+    if hasattr(response, "status_code") == True:
+        return PlainTextResponse(f"Error {response.text}")
+    else:
+        return templates.TemplateResponse("show_uri_list.html", {"request": request, "uriLists": response})
+
+@app.get("/showcfslist/{name}")
+def showList(request: Request, name: str = Path(...)):
+    response = getSpecificCFSList(sonicIP, name)
+
+    if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
     else:
         return templates.TemplateResponse("show_uri_list.html", {"request": request, "uriLists": response})
@@ -87,4 +96,3 @@ def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...)):
 def preemptMode(request: Request):
     response = configMode(sonicIP)
     return PlainTextResponse(response.text)
-

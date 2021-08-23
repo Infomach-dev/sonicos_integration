@@ -74,6 +74,18 @@ def getCFSLists(sonicIP: str):
     else: 
         return response
 
+def getSpecificCFSList(sonicIP: str, cfsListName: str):
+    url = f"https://{sonicIP}/api/sonicos/content-filter/uri-list-objects/name/{cfsListName}"
+    payload = ""
+    response = requests.request("GET", url, headers=headers, data=payload, verify=False)
+    if response.status_code == 200:
+        cfsLists = response.json()
+        cfsLists = json.dumps(cfsLists['content_filter'], indent=4)
+        cfsLists = json.loads(cfsLists)
+        return cfsLists
+    else:
+        return response
+
 def insertIntoCFS(sonicIP: str, cfsName: str, uri: str):
     url = f"https://{sonicIP}/api/sonicos/content-filter/uri-list-objects"
     payload = {"content_filter": {"uri_list_object": [
