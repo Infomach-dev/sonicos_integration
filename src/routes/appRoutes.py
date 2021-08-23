@@ -76,19 +76,33 @@ def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = F
        response = commitChanges(sonicIP)
 
     if response.status_code == 200:
-        return RedirectResponse(url="/showcfslists", status_code=303)
+        return RedirectResponse(url=f"/showcfslist/{cfsListNames}", status_code=303)
     else:
         return PlainTextResponse(f"Error {response.text}")
 
 @app.post("/removefromlist")
 def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...)):
-    response = removeFromCFS(sonicIP, cfsListName, uriToDel)
+    # remove protocol from urls
+    if uriToDel.find("htt") != -1:
+        cleanUri = uriToDel.split('//')
+        if cleanUri[0].find('http') != -1:
+            cleanUri.pop(0)
+            uriToDel = ".".join(cleanUri)
 
+    # remove www subdomain from urls
+    if uriToDel.find('ww') != -1:
+        cleanUri = uriToDel.split('.')
+        if cleanUri[0].find('ww') != -1:
+            cleanUri.pop(0)
+            uriToDel = ".".join(cleanUri)
+
+    response = removeFromCFS(sonicIP, cfsListName, uriToDel)
+    
     if response.status_code == 200:
        response = commitChanges(sonicIP)
 
     if response.status_code == 200:
-        return RedirectResponse(url="/showcfslists", status_code=303)
+        return RedirectResponse(url=f"/showcfslist/{cfsListName}", status_code=303)
     else:
         return PlainTextResponse(f"Error {response.text}")
 
