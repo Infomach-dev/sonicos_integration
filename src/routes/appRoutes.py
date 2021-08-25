@@ -12,16 +12,16 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="views")
 
-sonicIP = "192.168.1.250"
+fwAddress = "192.168.1.250"
 
 @app.get("/")
 def index(request: Request):
-    response = getCFSLists(sonicIP)
+    response = getCFSLists(fwAddress)
     return templates.TemplateResponse("index.html", {"request": request, "uriLists": response})
 
 @app.get("/showcfslists")
 def showLists(request: Request):
-    response = getCFSLists(sonicIP)
+    response = getCFSLists(fwAddress)
 
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
@@ -30,16 +30,16 @@ def showLists(request: Request):
 
 @app.get("/showcfslist/{name}")
 def showList(request: Request, name: str = Path(...)):
-    response = getSpecificCFSList(sonicIP, name)
+    response = getSpecificCFSList(fwAddress, name)
 
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
     else:
         return templates.TemplateResponse("show_uri_list.html", {"request": request, "uriLists": response})
 
-@app.get("/login")
-def loginToAPI(): 
-    response = login(sonicIP)
+@app.post("/login")
+def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(...), fwPassword: str = Form(...)): 
+    response = login(fwAddress, fwUser, fwPassword)
     if response.status_code == 200:
         return PlainTextResponse("Logado com sucesso!")
     else:
@@ -47,7 +47,7 @@ def loginToAPI():
 
 @app.get("/logout")
 def logoutFromAPI():
-    response = logout(sonicIP)
+    response = logout(fwAddress)
 
     if response.status_code == 200:
         return PlainTextResponse("Logout realizado com sucesso!")
@@ -70,10 +70,10 @@ def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = F
             cleanUri.pop(0)
             uriToAdd = ".".join(cleanUri)
 
-    response = insertIntoCFS(sonicIP, cfsListNames, uriToAdd)
+    response = insertIntoCFS(fwAddress, cfsListNames, uriToAdd)
 
     if response.status_code == 200:
-       response = commitChanges(sonicIP)
+       response = commitChanges(fwAddress)
 
     if response.status_code == 200:
         return RedirectResponse(url=f"/showcfslist/{cfsListNames}", status_code=303)
@@ -96,10 +96,10 @@ def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...)):
             cleanUri.pop(0)
             uriToDel = ".".join(cleanUri)
 
-    response = removeFromCFS(sonicIP, cfsListName, uriToDel)
+    response = removeFromCFS(fwAddress, cfsListName, uriToDel)
     
     if response.status_code == 200:
-       response = commitChanges(sonicIP)
+       response = commitChanges(fwAddress)
 
     if response.status_code == 200:
         return RedirectResponse(url=f"/showcfslist/{cfsListName}", status_code=303)
@@ -108,5 +108,5 @@ def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...)):
 
 @app.get("/configmode")
 def preemptMode(request: Request):
-    response = configMode(sonicIP)
+    response = configMode(fwAddress)
     return PlainTextResponse(response.text)

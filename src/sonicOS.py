@@ -11,8 +11,8 @@ headers = OrderedDict(
             ('charset', 'UTF-8')
          ])
 
-def login(sonicIP: str):
-    url = f"https://{sonicIP}/api/sonicos/auth"
+def login(fwAddress: str, fwUser: str, fwPassword: str):
+    url = f"https://{fwAddress}/api/sonicos/auth"
     payload = ""
     headers = OrderedDict(
         [('Authorization', 'Basic YWRtaW46cGFzc3dvcmQ='),
@@ -26,30 +26,30 @@ def login(sonicIP: str):
 
     return response
 
-def logout(sonicIP: str):
-    url = f"https://{sonicIP}/api/sonicos/auth"
+def logout(fwAddress: str):
+    url = f"https://{fwAddress}/api/sonicos/auth"
     payload = ""
 
     response = requests.request("DELETE", url, data=payload, headers=headers, verify=False)
 
     return response
 
-def configMode(sonicIP: str):
-    url = f"https://{sonicIP}/api/sonicos/config-mode"
+def configMode(fwAddress: str):
+    url = f"https://{fwAddress}/api/sonicos/config-mode"
     payload = ""
     response = requests.request("POST", url, headers=headers, data=payload, verify=False)
 
     return response
 
-def commitChanges(sonicIP: str):
-    url = f"https://{sonicIP}/api/sonicos/config/pending"
+def commitChanges(fwAddress: str):
+    url = f"https://{fwAddress}/api/sonicos/config/pending"
     payload = ""
     response = requests.request("POST", url, headers=headers, data=payload, verify=False)
     
     return response
 
-def getCFSProfiles(sonicIP: str):
-    url = f"https://{sonicIP}/api/sonicos/content-filter/profiles"
+def getCFSProfiles(fwAddress: str):
+    url = f"https://{fwAddress}/api/sonicos/content-filter/profiles"
 
     response = requests.request("GET", url, headers=headers, verify=False)
     cfsProfilesList = response.json()
@@ -62,8 +62,8 @@ def getCFSProfiles(sonicIP: str):
     else: 
         return response
 
-def getCFSLists(sonicIP: str):
-    url = f"https://{sonicIP}/api/sonicos/content-filter/uri-list-objects"
+def getCFSLists(fwAddress: str):
+    url = f"https://{fwAddress}/api/sonicos/content-filter/uri-list-objects"
     payload = ""
     response = requests.request("GET", url, headers=headers, data=payload, verify=False)
     if response.status_code == 200:
@@ -74,8 +74,8 @@ def getCFSLists(sonicIP: str):
     else: 
         return response
 
-def getSpecificCFSList(sonicIP: str, cfsListName: str):
-    url = f"https://{sonicIP}/api/sonicos/content-filter/uri-list-objects/name/{cfsListName}"
+def getSpecificCFSList(fwAddress: str, cfsListName: str):
+    url = f"https://{fwAddress}/api/sonicos/content-filter/uri-list-objects/name/{cfsListName}"
     payload = ""
     response = requests.request("GET", url, headers=headers, data=payload, verify=False)
     if response.status_code == 200:
@@ -86,8 +86,8 @@ def getSpecificCFSList(sonicIP: str, cfsListName: str):
     else:
         return response
 
-def insertIntoCFS(sonicIP: str, cfsName: str, uri: str):
-    url = f"https://{sonicIP}/api/sonicos/content-filter/uri-list-objects"
+def insertIntoCFS(fwAddress: str, cfsName: str, uri: str):
+    url = f"https://{fwAddress}/api/sonicos/content-filter/uri-list-objects"
     payload = {"content_filter": {"uri_list_object": [
         {
             "name": cfsName,
@@ -99,8 +99,8 @@ def insertIntoCFS(sonicIP: str, cfsName: str, uri: str):
 
     return response
 
-def removeFromCFS(sonicIP: str, cfsName: str, uri: str):
-    url = f"https://{sonicIP}/api/sonicos/content-filter/uri-list-objects"
+def removeFromCFS(fwAddress: str, cfsName: str, uri: str):
+    url = f"https://{fwAddress}/api/sonicos/content-filter/uri-list-objects"
 
     payload = {"content_filter": {"uri_list_object": [
                 {
