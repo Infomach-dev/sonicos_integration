@@ -1,8 +1,7 @@
 import json
+import base64
 import requests
 from collections import OrderedDict
-
-from requests.api import head
 
 headers = OrderedDict(
         [('Accept', 'application/json'),
@@ -12,10 +11,16 @@ headers = OrderedDict(
          ])
 
 def login(fwAddress: str, fwUser: str, fwPassword: str):
+    # make credentials base64 encoded
+    credentials = fwUser+":"+fwPassword
+    credentials = bytes(credentials, 'utf-8')
+    encode = base64.b64encode(credentials)
+    encode = str(encode, 'utf-8')
+
     url = f"https://{fwAddress}/api/sonicos/auth"
     payload = ""
     headers = OrderedDict(
-        [('Authorization', 'Basic YWRtaW46cGFzc3dvcmQ='),
+        [('Authorization', f'Basic {encode}'),
             ('Accept', 'application/json'),
             ('Content-Type', 'application/json'),
             ('Accept-Encoding', 'application/json'),
