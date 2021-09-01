@@ -55,7 +55,7 @@ def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(
 
     response = login(fwAddress, fwUser, fwPassword)
     if response.status_code == 200:
-        return RedirectResponse("/addtolist", status_code=303)
+        return RedirectResponse("/portal", status_code=303)
     else:
         return PlainTextResponse(f"Error: {response.text}")
 
@@ -103,6 +103,15 @@ def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = F
     else:
         return PlainTextResponse(f"Error {response.text}")
 
+@app.get("/removefromlist")
+def removeFromList(request: Request):
+    response = getCFSLists(currentFwAddress)
+
+    if hasattr(response, "status_code") == True:
+        return PlainTextResponse(f"Error {response.text}")
+    else:
+        return templates.TemplateResponse("remove_from_list.html", {"request": request, "uriLists": response})
+
 @app.post("/removefromlist")
 def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...)):
     # remove protocol from urls
@@ -133,3 +142,10 @@ def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...)):
 def preemptMode(request: Request):
     response = configMode(currentFwAddress)
     return PlainTextResponse(response.text)
+
+@app.get("/portal")
+def portal(request: Request):
+    response = getFwInfo(currentFwAddress)
+    currentFwName = response['firewall_name']
+
+    return templates.TemplateResponse("portal.html", {"request": request, "currentFwName": currentFwName})
