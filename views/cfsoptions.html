@@ -20,19 +20,5 @@
         <input type="text" name="uriToAdd" id="uriToAdd" placeholder="infomach.com.br"> <br>
         <button>Adicionar</button>
     </form>
-
-    <h3>Para remover um site já liberado, preencha abaixo:</h3>
-    <form method="POST" action="/removefromlist">
-        <label for="cfsProfile">Qual a lista contém o site a ser removido?</label> <br>
-        <select name=cfsListName id="cfsListName">
-        {% for uriListName in uriLists['uri_list_object'] %}
-            <option> {{uriListName['name']}}
-        {% endfor %}
-        </select> <br>
-
-        <label for="uriToAdd">Qual o domínio do site a ser removido?</label> <br>
-        <input type="text" name="uriToDel" id="uriToDel" placeholder="infomach.com.br"> <br>
-        <button>Remover</button>
-    <form>
 </body>
 </html>
