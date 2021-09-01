@@ -117,3 +117,16 @@ def removeFromCFS(fwAddress: str, cfsName: str, uri: str):
     response = requests.request("DELETE", url, json=payload, headers=headers, verify=False)
 
     return response
+
+def getFwInfo(fwAddress):
+    url = f"https://{fwAddress}/api/sonicos/administration/global"
+
+    payload = ""
+    response = requests.request("GET", url, headers=headers, data=payload, verify=False)
+    if response.status_code == 200:
+        info = response.json()
+        info = json.dumps(info['administration'], indent=4)
+        info = json.loads(info)
+        return info
+    else:
+        return response
