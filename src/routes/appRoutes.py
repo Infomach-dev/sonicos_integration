@@ -1,4 +1,5 @@
 from sonicOS import * 
+from validations import removeProtocols, removeWWW
 from fastapi import FastAPI
 from fastapi.params import Form, Path
 from starlette.requests import Request
@@ -39,19 +40,8 @@ def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(
     global currentFwAddress
     currentFwAddress = fwAddress
     
-    # remove protocol from urls
-    if fwAddress.find("htt") != -1:
-        cleanUri = fwAddress.split('//')
-        if cleanUri[0].find('http') != -1:
-            cleanUri.pop(0)
-            fwAddress = ".".join(cleanUri)
-
-    # remove www subdomain from urls
-    if fwAddress.find('ww') != -1:
-        cleanUri = fwAddress.split('.')
-        if cleanUri[0].find('ww') != -1:
-            cleanUri.pop(0)
-            fwAddress = ".".join(cleanUri)
+    fwAddress = removeProtocols(fwAddress)
+    fwAddress = removeWWW(fwAddress)
 
     response = login(fwAddress, fwUser, fwPassword)
     if response.status_code == 200:
@@ -79,19 +69,9 @@ def addToList(request: Request):
 
 @app.post("/addtolist")
 def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = Form(...)):
-    # remove protocol from urls
-    if uriToAdd.find("htt") != -1:
-        cleanUri = uriToAdd.split('//')
-        if cleanUri[0].find('http') != -1:
-            cleanUri.pop(0)
-            uriToAdd = ".".join(cleanUri)
-
-    # remove www subdomain from urls
-    if uriToAdd.find('ww') != -1:
-        cleanUri = uriToAdd.split('.')
-        if cleanUri[0].find('ww') != -1:
-            cleanUri.pop(0)
-            uriToAdd = ".".join(cleanUri)
+    
+    uriToAdd = removeProtocols(uriToAdd)
+    uriToAdd = removeWWW(uriToAdd)
 
     response = insertIntoCFS(currentFwAddress, cfsListNames, uriToAdd)
 
@@ -114,19 +94,9 @@ def removeFromList(request: Request):
 
 @app.post("/removefromlist")
 def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...)):
-    # remove protocol from urls
-    if uriToDel.find("htt") != -1:
-        cleanUri = uriToDel.split('//')
-        if cleanUri[0].find('http') != -1:
-            cleanUri.pop(0)
-            uriToDel = ".".join(cleanUri)
-
-    # remove www subdomain from urls
-    if uriToDel.find('ww') != -1:
-        cleanUri = uriToDel.split('.')
-        if cleanUri[0].find('ww') != -1:
-            cleanUri.pop(0)
-            uriToDel = ".".join(cleanUri)
+    
+    uriToDel = removeProtocols(uriToDel)
+    uriToDel = removeWWW(uriToDel)
 
     response = removeFromCFS(currentFwAddress, cfsListName, uriToDel)
     
