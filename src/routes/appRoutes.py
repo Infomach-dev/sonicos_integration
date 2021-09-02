@@ -1,5 +1,5 @@
+import tldextract
 from sonicOS import * 
-from validations import removeProtocols, removeWWW
 from fastapi import FastAPI
 from fastapi.params import Form, Path
 from starlette.requests import Request
@@ -40,8 +40,12 @@ def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(
     global currentFwAddress
     currentFwAddress = fwAddress
     
-    fwAddress = removeProtocols(fwAddress)
-    fwAddress = removeWWW(fwAddress)
+    # url validations: remove protocols and subdomains
+    cleanStr = tldextract.extract(fwAddress)
+    if cleanStr.subdomain != '' and cleanStr.suffix != '':
+        fwAddress = (cleanStr.subdomain + '.' + cleanStr.domain + '.' + cleanStr.suffix)
+    else:
+        fwAddress = cleanStr.domain
 
     response = login(fwAddress, fwUser, fwPassword)
     if response.status_code == 200:
@@ -70,8 +74,9 @@ def addToList(request: Request):
 @app.post("/addtolist")
 def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = Form(...)):
     
-    uriToAdd = removeProtocols(uriToAdd)
-    uriToAdd = removeWWW(uriToAdd)
+    # url validations: remove protocols and subdomains
+    cleanUri = tldextract.extract(uriToAdd)
+    uriToAdd = (cleanUri.domain + '.' + cleanUri.suffix)
 
     response = insertIntoCFS(currentFwAddress, cfsListNames, uriToAdd)
 
@@ -95,8 +100,9 @@ def removeFromList(request: Request):
 @app.post("/removefromlist")
 def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...)):
     
-    uriToDel = removeProtocols(uriToDel)
-    uriToDel = removeWWW(uriToDel)
+    # url validations: remove protocols and subdomains
+    cleanUri = tldextract.extract(uriToDel)
+    uriToDel = (cleanUri.domain + '.' + cleanUri.suffix)
 
     response = removeFromCFS(currentFwAddress, cfsListName, uriToDel)
     
