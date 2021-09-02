@@ -10,7 +10,6 @@ filelock @ file:///home/joaovmlima/.cache/pypoetry/artifacts/f4/78/c1/69555c3867
 h11 @ file:///home/joaovmlima/.cache/pypoetry/artifacts/6f/50/9d/65e5b4940425051d03fab25052973dcf80bbe2f00676b117d40996e468/h11-0.12.0-py3-none-any.whl
 idna @ file:///home/joaovmlima/.cache/pypoetry/artifacts/a5/7d/f0/56f2a34c99da4534f97d70ca8ce7eace4ad5581a10938c3be412783add/idna-3.2-py3-none-any.whl
 Jinja2 @ file:///home/joaovmlima/.cache/pypoetry/artifacts/1b/1c/64/6fcc5a7a4ffb6e923a1309d4e4d62309f637ac52cba8614c5778bc2650/Jinja2-3.0.1-py3-none-any.whl
-MarkupSafe @ file:///home/joaovmlima/.cache/pypoetry/artifacts/e9/aa/ce/73da3aa2f2d872e5d1cb28a49f7e6e0e76c9e7ba290b034f442badefd2/MarkupSafe-2.0.1-cp38-cp38-manylinux2010_x86_64.whl
 more-itertools @ file:///home/joaovmlima/.cache/pypoetry/artifacts/62/3d/33/5a8bb7d6560ecb8d24e4a729b3531da94e59535c990304fa6500d27689/more_itertools-8.8.0-py3-none-any.whl
 packaging @ file:///home/joaovmlima/.cache/pypoetry/artifacts/6e/de/e5/e3e7e60b359c616435089a1dd11b101dc553fae21fca74bbe98d0c323e/packaging-21.0-py3-none-any.whl
 pluggy @ file:///home/joaovmlima/.cache/pypoetry/artifacts/9c/e5/0b/2d64d03361a081edeb5d2ec5f286ccf9719587781fbf6822e1b6384c27/pluggy-0.13.1-py2.py3-none-any.whl
