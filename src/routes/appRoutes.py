@@ -40,19 +40,11 @@ def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(
     global currentFwAddress
     currentFwAddress = fwAddress
     
-    # gets custom port in url
-    if fwAddress.find(":"):
-        getPort = fwAddress.split(":")
-        fwPort = getPort[1]
+    # protocol validation at firewall address
+    if fwAddress.find("https://") == -1:
+        fwAddress = ("https://" + fwAddress)
 
-    # url validations: remove protocols and subdomains
-    cleanStr = tldextract.extract(fwAddress)
-    if cleanStr.subdomain != '' and cleanStr.suffix != '':
-        fwAddress = (cleanStr.subdomain + '.' + cleanStr.domain + '.' + cleanStr.suffix)
-    else:
-        fwAddress = cleanStr.domain
-
-    response = login(fwAddress, fwPort, fwUser, fwPassword)
+    response = login(fwAddress, fwUser, fwPassword)
     if response.status_code == 200:
         return RedirectResponse("/portal", status_code=303)
     else:
