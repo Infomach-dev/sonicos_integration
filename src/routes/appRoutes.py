@@ -1,6 +1,6 @@
 import tldextract
 from sonicOS import * 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.params import Form, Path
 from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
@@ -44,7 +44,11 @@ def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(
     if fwAddress.find("https://") == -1:
         fwAddress = ("https://" + fwAddress)
 
-    response = login(fwAddress, fwUser, fwPassword)
+    try:
+        response = login(fwAddress, fwUser, fwPassword)
+    except:
+        raise HTTPException(403, "Erro ao conectar no firewall!")
+
     if response.status_code == 200:
         return RedirectResponse("/portal", status_code=303)
     else:
