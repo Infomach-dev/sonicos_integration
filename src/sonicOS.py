@@ -10,14 +10,14 @@ headers = OrderedDict(
             ('charset', 'UTF-8')
          ])
 
-def login(fwAddress: str, fwUser: str, fwPassword: str):
+def login(fwAddress: str,fwPort: str, fwUser: str, fwPassword: str):
     # make credentials base64 encoded
     credentials = fwUser+":"+fwPassword
     credentials = bytes(credentials, 'utf-8')
     encode = base64.b64encode(credentials)
     encode = str(encode, 'utf-8')
 
-    url = f"https://{fwAddress}/api/sonicos/auth"
+    url = f"https://{fwAddress}:{fwPort}/api/sonicos/auth"
     payload = ""
     headers = OrderedDict(
         [('Authorization', f'Basic {encode}'),
