@@ -70,7 +70,7 @@ def addToList(request: Request):
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
     else:
-        return templates.TemplateResponse("/cfsoptions.html", {"request": request, "uriLists": response})
+        return templates.TemplateResponse("/show_uri_list.html", {"request": request, "uriLists": response})
 
 @app.post("/addtolist")
 def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = Form(...)):
