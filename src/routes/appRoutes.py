@@ -40,12 +40,9 @@ def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(
     global currentFwAddress
     currentFwAddress = fwAddress
     
-    # url validations: remove protocols and subdomains
-    cleanStr = tldextract.extract(fwAddress)
-    if cleanStr.subdomain != '' and cleanStr.suffix != '':
-        fwAddress = (cleanStr.subdomain + '.' + cleanStr.domain + '.' + cleanStr.suffix)
-    else:
-        fwAddress = cleanStr.domain
+    # protocol validation at firewall address
+    if fwAddress.find("https://") == -1:
+        fwAddress = ("https://" + fwAddress)
 
     response = login(fwAddress, fwUser, fwPassword)
     if response.status_code == 200:

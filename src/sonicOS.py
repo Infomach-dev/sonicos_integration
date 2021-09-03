@@ -17,7 +17,7 @@ def login(fwAddress: str, fwUser: str, fwPassword: str):
     encode = base64.b64encode(credentials)
     encode = str(encode, 'utf-8')
 
-    url = f"https://{fwAddress}/api/sonicos/auth"
+    url = f"{fwAddress}/api/sonicos/auth"
     payload = ""
     headers = OrderedDict(
         [('Authorization', f'Basic {encode}'),
