@@ -62,7 +62,6 @@ def getCFSProfiles(fwAddress: str):
     cfsProfilesList = json.dumps(cfsProfilesList['content_filter'], indent=4)
     cfsProfilesList = json.loads(cfsProfilesList)
 
-    # print(cfsProfilesList['profile'][0]['name'])
     if response.status_code == 200:
         return cfsProfilesList
     else: 
@@ -107,9 +106,8 @@ def insertIntoCFS(fwAddress: str, cfsName: str, uri: str):
         message = response.json()
         message = json.dumps(message['status'], indent=4)
         message = json.loads(message)
-
-    if message['info'][0]['code'] == "E_EXISTS":
-        raise HTTPException(422, "Site já liberado!")
+        if message['info'][0]['code'] == "E_EXISTS":
+            raise HTTPException(422, "Site já liberado!")
 
     return response
 
@@ -129,9 +127,8 @@ def removeFromCFS(fwAddress: str, cfsName: str, uri: str):
         message = response.json()
         message = json.dumps(message['status'], indent=4)
         message = json.loads(message)
-
-    if message['info'][0]['code'] == "E_NO_MATCH":
-        raise HTTPException(422, "Site não encontrado!")
+        if message['info'][0]['code'] == "E_NO_MATCH":
+            raise HTTPException(422, "Site não encontrado!")
 
     return response
 

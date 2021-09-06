@@ -43,6 +43,7 @@ def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(
     # protocol validation at firewall address
     if fwAddress.find("https://") == -1:
         fwAddress = ("https://" + fwAddress)
+        currentFwAddress = fwAddress
 
     try:
         response = login(fwAddress, fwUser, fwPassword)
