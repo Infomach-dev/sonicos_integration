@@ -1,5 +1,6 @@
 import json
 import base64
+from fastapi.exceptions import HTTPException
 import requests
 from collections import OrderedDict
 
@@ -32,7 +33,7 @@ def login(fwAddress: str, fwUser: str, fwPassword: str):
     return response
 
 def logout(fwAddress: str):
-    url = f"https://{fwAddress}/api/sonicos/auth"
+    url = f"{fwAddress}/api/sonicos/auth"
     payload = ""
 
     response = requests.request("DELETE", url, data=payload, headers=headers, verify=False)
@@ -40,21 +41,21 @@ def logout(fwAddress: str):
     return response
 
 def configMode(fwAddress: str):
-    url = f"https://{fwAddress}/api/sonicos/config-mode"
+    url = f"{fwAddress}/api/sonicos/config-mode"
     payload = ""
     response = requests.request("POST", url, headers=headers, data=payload, verify=False)
 
     return response
 
 def commitChanges(fwAddress: str):
-    url = f"https://{fwAddress}/api/sonicos/config/pending"
+    url = f"{fwAddress}/api/sonicos/config/pending"
     payload = ""
     response = requests.request("POST", url, headers=headers, data=payload, verify=False)
     
     return response
 
 def getCFSProfiles(fwAddress: str):
-    url = f"https://{fwAddress}/api/sonicos/content-filter/profiles"
+    url = f"{fwAddress}/api/sonicos/content-filter/profiles"
 
     response = requests.request("GET", url, headers=headers, verify=False)
     cfsProfilesList = response.json()
@@ -68,7 +69,7 @@ def getCFSProfiles(fwAddress: str):
         return response
 
 def getCFSLists(fwAddress: str):
-    url = f"https://{fwAddress}/api/sonicos/content-filter/uri-list-objects"
+    url = f"{fwAddress}/api/sonicos/content-filter/uri-list-objects"
     payload = ""
     response = requests.request("GET", url, headers=headers, data=payload, verify=False)
     if response.status_code == 200:
@@ -80,7 +81,7 @@ def getCFSLists(fwAddress: str):
         return response
 
 def getSpecificCFSList(fwAddress: str, cfsListName: str):
-    url = f"https://{fwAddress}/api/sonicos/content-filter/uri-list-objects/name/{cfsListName}"
+    url = f"{fwAddress}/api/sonicos/content-filter/uri-list-objects/name/{cfsListName}"
     payload = ""
     response = requests.request("GET", url, headers=headers, data=payload, verify=False)
     if response.status_code == 200:
@@ -92,7 +93,7 @@ def getSpecificCFSList(fwAddress: str, cfsListName: str):
         return response
 
 def insertIntoCFS(fwAddress: str, cfsName: str, uri: str):
-    url = f"https://{fwAddress}/api/sonicos/content-filter/uri-list-objects"
+    url = f"{fwAddress}/api/sonicos/content-filter/uri-list-objects"
     payload = {"content_filter": {"uri_list_object": [
         {
             "name": cfsName,
@@ -102,10 +103,18 @@ def insertIntoCFS(fwAddress: str, cfsName: str, uri: str):
 
     response = requests.request("PUT", url, json=payload, headers=headers, verify=False)
 
+    if response.status_code != 200:
+        message = response.json()
+        message = json.dumps(message['status'], indent=4)
+        message = json.loads(message)
+
+    if message['info'][0]['code'] == "E_EXISTS":
+        raise HTTPException(422, "Site já liberado!")
+
     return response
 
 def removeFromCFS(fwAddress: str, cfsName: str, uri: str):
-    url = f"https://{fwAddress}/api/sonicos/content-filter/uri-list-objects"
+    url = f"{fwAddress}/api/sonicos/content-filter/uri-list-objects"
 
     payload = {"content_filter": {"uri_list_object": [
                 {
@@ -116,10 +125,18 @@ def removeFromCFS(fwAddress: str, cfsName: str, uri: str):
 
     response = requests.request("DELETE", url, json=payload, headers=headers, verify=False)
 
+    if response.status_code != 200:
+        message = response.json()
+        message = json.dumps(message['status'], indent=4)
+        message = json.loads(message)
+
+    if message['info'][0]['code'] == "E_NO_MATCH":
+        raise HTTPException(422, "Site não encontrado!")
+
     return response
 
 def getFwInfo(fwAddress):
-    url = f"https://{fwAddress}/api/sonicos/administration/global"
+    url = f"{fwAddress}/api/sonicos/administration/global"
 
     payload = ""
     response = requests.request("GET", url, headers=headers, data=payload, verify=False)
