@@ -1,6 +1,6 @@
 import tldextract
 from sonicOS import * 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.params import Form, Path
 from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
@@ -43,8 +43,13 @@ def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(
     # protocol validation at firewall address
     if fwAddress.find("https://") == -1:
         fwAddress = ("https://" + fwAddress)
+        currentFwAddress = fwAddress
 
-    response = login(fwAddress, fwUser, fwPassword)
+    try:
+        response = login(fwAddress, fwUser, fwPassword)
+    except:
+        raise HTTPException(403, "Erro ao conectar no firewall!")
+
     if response.status_code == 200:
         return RedirectResponse("/portal", status_code=303)
     else:
@@ -66,7 +71,7 @@ def addToList(request: Request):
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
     else:
-        return templates.TemplateResponse("/cfsoptions.html", {"request": request, "uriLists": response})
+        return templates.TemplateResponse("/add_to_list.html", {"request": request, "uriLists": response})
 
 @app.post("/addtolist")
 def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = Form(...)):

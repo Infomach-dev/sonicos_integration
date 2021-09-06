@@ -12,11 +12,11 @@
 
     <form method="POST" action="/login">
         <label for="fwAddress">Endereço do Firewall</label> <br>
-        <input type="text" name="fwAddress" id="fwAddress"> <br><br>
+        <input type="text" name="fwAddress" id="fwAddress" required placeholder="https://meufirewall.com"> <br><br>
         <label for="fwUser">Usuário do Firewall</label> <br>
-        <input type="text" name="fwUser" id="fwUser"> <br><br>
+        <input type="text" name="fwUser" id="fwUser" required> <br><br>
         <label for="fwPassword">Senha do Firewall</label> <br>
-        <input type="password" name="fwPassword" id="fwPassword"> <br><br>
+        <input type="password" name="fwPassword" id="fwPassword" required> <br><br>
         <button>Logar</button>
     </form>
 
