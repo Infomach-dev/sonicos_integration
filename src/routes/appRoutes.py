@@ -5,6 +5,7 @@ from fastapi.params import Form, Path
 from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import PlainTextResponse, RedirectResponse
 
 app = FastAPI()
@@ -12,6 +13,19 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="views")
+
+origins = [
+    "http://localhost:3000",
+    "http://localhost",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def index(request: Request):
@@ -24,7 +38,7 @@ def showLists(request: Request):
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
     else:
-        return templates.TemplateResponse("show_uri_list.html", {"request": request, "uriLists": response})
+        return response
 
 @app.get("/showcfslist/{name}")
 def showList(request: Request, name: str = Path(...)):
@@ -51,7 +65,7 @@ def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(
         raise HTTPException(403, "Erro ao conectar no firewall!")
 
     if response.status_code == 200:
-        return RedirectResponse("/portal", status_code=303)
+        return response.json
     else:
         return PlainTextResponse(f"Error: {response.text}")
 
