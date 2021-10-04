@@ -1,5 +1,5 @@
 import tldextract
-from sonicOS import * 
+from sonicos_api import sonicOS as snwl
 from fastapi import FastAPI, HTTPException
 from fastapi.params import Form, Path
 from starlette.requests import Request
@@ -19,7 +19,7 @@ def index(request: Request):
 
 @app.get("/showcfslists")
 def showLists(request: Request):
-    response = getCFSLists(currentFwAddress)
+    response = snwl.getCFSLists(currentFwAddress, False)
 
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
@@ -28,7 +28,7 @@ def showLists(request: Request):
 
 @app.get("/showcfslist/{name}")
 def showList(request: Request, name: str = Path(...)):
-    response = getSpecificCFSList(currentFwAddress, name)
+    response = snwl.getSpecificCFSList(currentFwAddress, name, False)
 
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
@@ -46,18 +46,19 @@ def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(
         currentFwAddress = fwAddress
 
     try:
-        response = login(fwAddress, fwUser, fwPassword)
+        response = snwl.fwLogin(fwAddress, fwUser, fwPassword, False)
+        print(response)
     except:
         raise HTTPException(403, "Erro ao conectar no firewall!")
 
-    if response.status_code == 200:
+    if response['status']['success'] == True:
         return RedirectResponse("/portal", status_code=303)
     else:
         return PlainTextResponse(f"Error: {response.text}")
 
 @app.get("/logout")
 def logoutFromAPI():
-    response = logout(currentFwAddress)
+    response = snwl.fwLogout(currentFwAddress, False)
 
     if response.status_code == 200:
         return PlainTextResponse("Logout realizado com sucesso!")
@@ -66,7 +67,7 @@ def logoutFromAPI():
 
 @app.get("/addtolist")
 def addToList(request: Request):
-    response = getCFSLists(currentFwAddress)
+    response = snwl.getCFSLists(currentFwAddress, False)
 
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
@@ -80,10 +81,10 @@ def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = F
     cleanUri = tldextract.extract(uriToAdd)
     uriToAdd = (cleanUri.domain + '.' + cleanUri.suffix)
 
-    response = insertIntoCFS(currentFwAddress, cfsListNames, uriToAdd)
+    response = snwl.insertIntoCFSList(currentFwAddress, cfsListNames, uriToAdd, False)
 
     if response.status_code == 200:
-       response = commitChanges(currentFwAddress)
+       response = snwl.commitChanges(currentFwAddress, False)
 
     if response.status_code == 200:
         return RedirectResponse(url=f"/showcfslist/{cfsListNames}", status_code=303)
@@ -92,7 +93,7 @@ def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = F
 
 @app.get("/removefromlist")
 def removeFromList(request: Request):
-    response = getCFSLists(currentFwAddress)
+    response = snwl.getCFSLists(currentFwAddress, False)
 
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
@@ -106,10 +107,10 @@ def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...)):
     cleanUri = tldextract.extract(uriToDel)
     uriToDel = (cleanUri.domain + '.' + cleanUri.suffix)
 
-    response = removeFromCFS(currentFwAddress, cfsListName, uriToDel)
+    response = snwl.removeFromCFS(currentFwAddress, cfsListName, uriToDel, False)
     
     if response.status_code == 200:
-       response = commitChanges(currentFwAddress)
+       response = snwl.commitChanges(currentFwAddress, False)
 
     if response.status_code == 200:
         return RedirectResponse(url=f"/showcfslist/{cfsListName}", status_code=303)
@@ -118,12 +119,12 @@ def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...)):
 
 @app.get("/configmode")
 def preemptMode(request: Request):
-    response = configMode(currentFwAddress)
+    response = snwl.configMode(currentFwAddress, False)
     return PlainTextResponse(response.text)
 
 @app.get("/portal")
 def portal(request: Request):
-    response = getFwInfo(currentFwAddress)
+    response = snwl.getFwInfo(currentFwAddress, False)
     currentFwName = response['firewall_name']
 
     return templates.TemplateResponse("portal.html", {"request": request, "currentFwName": currentFwName})
