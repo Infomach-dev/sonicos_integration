@@ -294,6 +294,17 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
+name = "sonicos-api"
+version = "0.1.2"
+description = "Lib to communicate with SonicWall's API"
+category = "main"
+optional = false
+python-versions = ">=3.8,<4.0"
+
+[package.dependencies]
+requests = ">=2.26.0,<3.0.0"
+
+[[package]]
 name = "starlette"
 version = "0.14.2"
 description = "The little ASGI library that shines."
@@ -374,7 +385,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "3.8.10"
-content-hash = "3efa766ee8b4ba310142b2b5ee693c996838857dafc9ed341297800b34e7d603"
+content-hash = "fa5b775acf74c39e161865a9738ca2dd20b982974ed66e30be27d808774f2a05"
 
 [metadata.files]
 aiofiles = [
@@ -555,6 +566,10 @@ requests-file = [
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
+]
+sonicos-api = [
+    {file = "sonicos-api-0.1.2.tar.gz", hash = "sha256:7827b7b99d59de77ffc70a275e7fb45acde43c9f25fd46f218f2cb8f5900ac6f"},
+    {file = "sonicos_api-0.1.2-py3-none-any.whl", hash = "sha256:482d741d0dd2e7046ffde49814813b3004617fa379d0c0acb4fe1f891300fa3a"},
 ]
 starlette = [
     {file = "starlette-0.14.2-py3-none-any.whl", hash = "sha256:3c8e48e52736b3161e34c9f0e8153b4f32ec5d8995a3ee1d59410d92f75162ed"},
