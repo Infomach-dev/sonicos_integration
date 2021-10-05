@@ -10,7 +10,13 @@
 <body>
     <h1>Bem vindo!</h1>
     <h3>O que gostaria de fazer?</h3>
-
+    <h4>Escolha um firewall para se conectar:</h4>
+    <select name="fwList" id="fwList">
+        {% for fw in fwList %}
+        <option value="">{{fw['fwCommonName']}}</option>
+        {% endfor %}
+    </select>
+    <br><br>
     <a href="/addtolist">
         <button>Liberar site</button>
     </a>

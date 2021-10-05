@@ -138,4 +138,6 @@ def preemptMode(request: Request):
 
 @app.get("/portal")
 def portal(request: Request):
-    return templates.TemplateResponse("portal.html", {"request": request})
+    fwList = db.firewallsCollection.find({'companyID': '1'})
+    print(fwList)
+    return templates.TemplateResponse("portal.html", {"request": request, "fwList": fwList})
