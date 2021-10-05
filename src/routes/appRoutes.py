@@ -1,4 +1,6 @@
 import tldextract
+from db import main as db
+from argon2 import PasswordHasher
 from sonicos_api import sonicOS as snwl
 from fastapi import FastAPI, HTTPException
 from fastapi.params import Form, Path
@@ -36,6 +38,19 @@ def showList(request: Request, name: str = Path(...)):
         return templates.TemplateResponse("show_uri_list.html", {"request": request, "uriLists": response})
 
 @app.post("/login")
+def loginToPortal(request: Request, username: str = Form(...), password: str = Form(...)):
+    searchUser = db.usersCollection.find_one({'username': username})
+    if not searchUser:
+        return PlainTextResponse("Usuário não encontrado!")
+    
+    hasher = PasswordHasher()
+    try: 
+        hasher.verify(searchUser['password'], password)
+        return RedirectResponse("/portal", status_code=303)
+    except:
+        return PlainTextResponse("Usuário ou senha incorreta")
+
+@app.post("/fwlogin")
 def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(...), fwPassword: str = Form(...)):
     global currentFwAddress
     currentFwAddress = fwAddress
@@ -47,7 +62,6 @@ def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(
 
     try:
         response = snwl.fwLogin(fwAddress, fwUser, fwPassword, False)
-        print(response)
     except:
         raise HTTPException(403, "Erro ao conectar no firewall!")
 
@@ -124,7 +138,4 @@ def preemptMode(request: Request):
 
 @app.get("/portal")
 def portal(request: Request):
-    response = snwl.getFwInfo(currentFwAddress, False)
-    currentFwName = response['administration']['firewall_name']
-
-    return templates.TemplateResponse("portal.html", {"request": request, "currentFwName": currentFwName})
+    return templates.TemplateResponse("portal.html", {"request": request})
