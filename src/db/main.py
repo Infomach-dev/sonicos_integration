@@ -1,6 +1,6 @@
 import pymongo
 
-client = pymongo.MongoClient("mongodb+srv://api-admin:Infomach%402021@cluster0.b94hv.mongodb.net/Cluster0?retryWrites=true&w=majority")
+client = pymongo.MongoClient("<InsertConnectionString>")
 db = client['snwl-portal']
 
 usersCollection = db['users']
