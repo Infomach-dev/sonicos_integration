@@ -125,6 +125,6 @@ def preemptMode(request: Request):
 @app.get("/portal")
 def portal(request: Request):
     response = snwl.getFwInfo(currentFwAddress, False)
-    currentFwName = response['firewall_name']
+    currentFwName = response['administration']['firewall_name']
 
     return templates.TemplateResponse("portal.html", {"request": request, "currentFwName": currentFwName})
