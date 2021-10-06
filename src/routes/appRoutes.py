@@ -1,6 +1,7 @@
 import tldextract
 from db import main as db
 from argon2 import PasswordHasher
+from bson.objectid import ObjectId
 from sonicos_api import sonicOS as snwl
 from fastapi import FastAPI, HTTPException
 from fastapi.params import Form, Path
@@ -51,14 +52,16 @@ def loginToPortal(request: Request, username: str = Form(...), password: str = F
         return PlainTextResponse("Usuário ou senha incorreta")
 
 @app.post("/fwlogin")
-def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(...), fwPassword: str = Form(...)):
-    global currentFwAddress
-    currentFwAddress = fwAddress
-    
+def loginToAPI(request: Request, _id: str = Form(...)):
+
+    fw = db.firewallsCollection.find_one({'_id': ObjectId(_id)})
+    fwAddress = fw['fwAddress'] + ":" + fw['fwPort']
+    fwUser = fw['fwUser']
+    fwPassword = fw['fwPassword']
+
     # protocol validation at firewall address
     if fwAddress.find("https://") == -1:
         fwAddress = ("https://" + fwAddress)
-        currentFwAddress = fwAddress
 
     try:
         response = snwl.fwLogin(fwAddress, fwUser, fwPassword, False)
@@ -68,7 +71,7 @@ def loginToAPI(request: Request, fwAddress: str = Form(...), fwUser: str = Form(
     if response['status']['success'] == True:
         return RedirectResponse("/portal", status_code=303)
     else:
-        return PlainTextResponse(f"Error: {response.text}")
+        return PlainTextResponse(f"Error: {response}")
 
 @app.get("/logout")
 def logoutFromAPI():
