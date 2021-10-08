@@ -1,3 +1,4 @@
+from typing import Optional
 from pymongo import response
 import requests
 import tldextract
@@ -22,8 +23,8 @@ from fastapi_sessions.frontends.implementations import SessionCookie, CookiePara
 
 
 class SessionData(BaseModel):
-    username: str
-
+    username: Optional[str]
+    fwID: Optional[str]
 
 cookie_params = CookieParameters()
 
@@ -36,7 +37,6 @@ cookie = SessionCookie(
     cookie_params=cookie_params,
 )
 backend = InMemoryBackend[UUID, SessionData]()
-
 
 class BasicVerifier(SessionVerifier[UUID, SessionData]):
     def __init__(
@@ -86,22 +86,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="views")
 
-@app.post("/create_session/{name}")
-async def create_session(name: str, response: Response):
-
-    session = uuid4()
-    data = SessionData(username=name)
-
-    await backend.create(session, data)
-    cookie.attach_to_response(response, session)
-
-    return f"created session for {name}"
-
-
 @app.get("/whoami", dependencies=[Depends(cookie)])
 async def whoami(session_data: SessionData = Depends(verifier)):
     return session_data
-
 
 @app.post("/delete_session")
 async def del_session(response: Response, session_id: UUID = Depends(cookie)):
@@ -115,18 +102,22 @@ async def del_session(response: Response, session_id: UUID = Depends(cookie)):
 def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.get("/showcfslists")
-def showLists(request: Request):
-    response = snwl.getCFSLists(currentFwAddress, False)
+@app.get("/showcfslists", dependencies=[Depends(cookie)])
+def showLists(request: Request, session_data: SessionData = Depends(verifier)):
+    fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
+    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+    response = snwl.getCFSLists(fwAddress, False)
 
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
     else:
         return templates.TemplateResponse("show_uri_list.html", {"request": request, "uriLists": response})
 
-@app.get("/showcfslist/{name}")
-def showList(request: Request, name: str = Path(...)):
-    response = snwl.getSpecificCFSList(currentFwAddress, name, False)
+@app.get("/showcfslist/{name}", dependencies=[Depends(cookie)])
+def showList(request: Request, name: str = Path(...), session_data: SessionData = Depends(verifier)):
+    fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
+    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+    response = snwl.getSpecificCFSList(fwAddress, name, False)
 
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
@@ -157,13 +148,11 @@ async def loginToPortal(request: Request, response: Response, username: str = Fo
 
     await create_session(username, response)
     return RedirectResponse("/portal", status_code=301, headers=response.headers)
-    # return PlainTextResponse(f"Sessão criada para {username}!")
 
+@app.post("/fwlogin", dependencies=[Depends(cookie)])
+async def loginToAPI(request: Request, res: Response, fwList: str = Form(...), session_data: SessionData = Depends(verifier), session_id: UUID = Depends(cookie)):
 
-@app.post("/fwlogin")
-def loginToAPI(request: Request, _id: str = Form(...)):
-
-    fw = db.firewallsCollection.find_one({'_id': ObjectId(_id)})
+    fw = db.firewallsCollection.find_one({'_id': ObjectId(fwList)})
     fwAddress = fw['fwAddress'] + ":" + fw['fwPort']
     fwUser = fw['fwUser']
     fwPassword = fw['fwPassword']
@@ -178,78 +167,96 @@ def loginToAPI(request: Request, _id: str = Form(...)):
         raise HTTPException(403, "Erro ao conectar no firewall!")
 
     if response['status']['success'] == True:
-        return RedirectResponse("/portal", status_code=303)
+        session_data.fwID = fwList
+
+        await backend.update(session_id, session_data)
+        return RedirectResponse("/portal", status_code=301, headers=res.headers)
     else:
         return PlainTextResponse(f"Error: {response}")
 
-@app.get("/logout")
-def logoutFromAPI():
-    response = snwl.fwLogout(currentFwAddress, False)
+@app.get("/logout", dependencies=[Depends(cookie)])
+def logoutFromAPI(session_data: SessionData = Depends(verifier)):
+    fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
+    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+    response = snwl.fwLogout(fwAddress, False)
 
     if response.status_code == 200:
         return PlainTextResponse("Logout realizado com sucesso!")
     else:
         return PlainTextResponse(f"Error {response.text}")
 
-@app.get("/addtolist")
-def addToList(request: Request):
-    response = snwl.getCFSLists(currentFwAddress, False)
+@app.get("/addtolist", dependencies=[Depends(cookie)])
+def addToList(request: Request, session_data: SessionData = Depends(verifier)):
+    fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
+    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+    response = snwl.getCFSLists(fwAddress, False)
 
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
     else:
-        return templates.TemplateResponse("/add_to_list.html", {"request": request, "uriLists": response})
+        return templates.TemplateResponse("/add_to_list.html", {"request": request, "uriLists": response['content_filter']})
 
-@app.post("/addtolist")
-def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = Form(...)):
-    
+@app.post("/addtolist", dependencies=[Depends(cookie)])
+async def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = Form(...), session_data: SessionData = Depends(verifier)):
+    fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
+    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+
     # url validations: remove protocols and subdomains
     cleanUri = tldextract.extract(uriToAdd)
     uriToAdd = (cleanUri.domain + '.' + cleanUri.suffix)
 
-    response = snwl.insertIntoCFSList(currentFwAddress, cfsListNames, uriToAdd, False)
+    response = snwl.insertIntoCFSList(fwAddress, cfsListNames, uriToAdd, False)
+    if response['status']['success'] == True:
+       response = snwl.commitChanges(fwAddress, False)
 
-    if response.status_code == 200:
-       response = snwl.commitChanges(currentFwAddress, False)
-
-    if response.status_code == 200:
+    if response['status']['success'] == True:
         return RedirectResponse(url=f"/showcfslist/{cfsListNames}", status_code=303)
     else:
         return PlainTextResponse(f"Error {response.text}")
 
-@app.get("/removefromlist")
-def removeFromList(request: Request):
-    response = snwl.getCFSLists(currentFwAddress, False)
+@app.get("/removefromlist", dependencies=[Depends(cookie)])
+def removeFromList(request: Request, session_data: SessionData = Depends(verifier)):
+    fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
+    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+    response = snwl.getCFSLists(fwAddress, False)
 
     if hasattr(response, "status_code") == True:
         return PlainTextResponse(f"Error {response.text}")
     else:
         return templates.TemplateResponse("remove_from_list.html", {"request": request, "uriLists": response})
 
-@app.post("/removefromlist")
-def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...)):
-    
+@app.post("/removefromlist", dependencies=[Depends(cookie)])
+def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...), session_data: SessionData = Depends(verifier)):
+    fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
+    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+
     # url validations: remove protocols and subdomains
     cleanUri = tldextract.extract(uriToDel)
     uriToDel = (cleanUri.domain + '.' + cleanUri.suffix)
 
-    response = snwl.removeFromCFS(currentFwAddress, cfsListName, uriToDel, False)
+    response = snwl.removeFromCFS(fwAddress, cfsListName, uriToDel, False)
     
     if response.status_code == 200:
-       response = snwl.commitChanges(currentFwAddress, False)
+       response = snwl.commitChanges(fwAddress, False)
 
     if response.status_code == 200:
         return RedirectResponse(url=f"/showcfslist/{cfsListName}", status_code=303)
     else:
         return PlainTextResponse(f"Error {response.text}")
 
-@app.get("/configmode")
-def preemptMode(request: Request):
-    response = snwl.configMode(currentFwAddress, False)
-    return PlainTextResponse(response.text)
+@app.get("/portal", dependencies=[Depends(cookie)])
+def portal(request: Request, session_data: SessionData = Depends(verifier)):
+    userDocument = db.usersCollection.find_one({'username': session_data.username})
+    userCompanyID = userDocument['companyID']
 
-@app.get("/portal")
-def portal(request: Request):
-    fwList = db.firewallsCollection.find({'companyID': '1'})
+    if userDocument['group'] == 'admin':
+        fwList = db.firewallsCollection.find({})
+    else:
+        fwList = db.firewallsCollection.find({'companyID': userCompanyID})
 
-    return templates.TemplateResponse("portal.html", {"request": request, "fwList": fwList})
+    if session_data.fwID != None:
+        connectedFw = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
+        fwCommonName = connectedFw['fwCommonName']
+        return templates.TemplateResponse("portal.html", {"request": request, "fwList": fwList, "fwCommonName": fwCommonName})
+    else:
+        return templates.TemplateResponse("portal.html", {"request": request, "fwList": fwList})
