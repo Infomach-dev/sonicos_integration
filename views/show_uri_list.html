@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="static/styles.css">
 </head>
 <body>
-    {% for uriListName in uriLists['uri_list_object'] %}
+    {% for uriListName in uriLists['content_filter']['uri_list_object'] %}
         <h1>{{uriListName['name']}}</h1>
         {% for uri in uriListName['uri'] %}
             <p>{{uri['uri']}}</p>
