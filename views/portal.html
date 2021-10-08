@@ -14,9 +14,15 @@
     <form method="POST" action="/fwlogin">
         <select name="fwList" id="fwList">
             {% for fw in fwList %}
-            <option value="{{fw['_id']}}">{{fw['fwCommonName']}}</option>
+            <option name="_id" value="{{fw['_id']}}">{{fw['fwCommonName']}}</option>
             {% endfor %}
         </select>
+        <button>Login</button>
+        <br>
+        {% if fwCommonName %}
+        <p>Conectado no firewall: {{fwCommonName}}</p>
+        {% endif %}
+    </form>
         <br><br>
         <a href="/addtolist">
             <button>Liberar site</button>
@@ -27,6 +33,5 @@
         <a href="/showcfslists">
             <button>Ver listas</button>
         </a>
-    </form>
 </body>
 </html>
