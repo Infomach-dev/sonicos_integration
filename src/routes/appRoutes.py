@@ -261,7 +261,7 @@ def portal(request: Request, session_data: SessionData = Depends(verifier)):
     if userDocument['group'] == 'superadmin':
         isSuperAdmin = True
 
-    if userDocument['group'] == 'admin' or 'superadmin':
+    if userDocument['group'] == 'admin' or userDocument['group'] == 'superadmin':
         fwList = db.firewallsCollection.find({})
     else:
         fwList = db.firewallsCollection.find({'companyID': userCompanyID})
