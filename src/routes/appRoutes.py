@@ -23,6 +23,7 @@ from fastapi_sessions.frontends.implementations import SessionCookie, CookiePara
 class SessionData(BaseModel):
     username: Optional[str]
     fwID: Optional[str]
+    fwIndex: Optional[str]
 
 cookie_params = CookieParameters()
 
@@ -103,7 +104,7 @@ def index(request: Request):
 @app.get("/showcfslists", dependencies=[Depends(cookie)])
 def showLists(request: Request, session_data: SessionData = Depends(verifier)):
     fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
-    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+    fwAddress = fwCredentials['fwAddress'][session_data.fwIndex] + ":" + fwCredentials['fwPort']
     response = snwl.getCFSLists(fwAddress, False)
 
     if hasattr(response, "status_code") == True:
@@ -114,7 +115,7 @@ def showLists(request: Request, session_data: SessionData = Depends(verifier)):
 @app.get("/showcfslist/{name}", dependencies=[Depends(cookie)])
 def showList(request: Request, name: str = Path(...), session_data: SessionData = Depends(verifier)):
     fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
-    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+    fwAddress = fwCredentials['fwAddress'][session_data.fwIndex] + ":" + fwCredentials['fwPort']
     response = snwl.getSpecificCFSList(fwAddress, name, False)
 
     if hasattr(response, "status_code") == True:
@@ -152,9 +153,10 @@ async def loginToPortal(request: Request, response: Response, username: str = Fo
 async def loginToAPI(request: Request, res: Response, fwList: str = Form(...), session_data: SessionData = Depends(verifier), session_id: UUID = Depends(cookie)):
 
     fw = db.firewallsCollection.find_one({'_id': ObjectId(fwList)})
-
+    index = -1
     for address in fw['fwAddress']:
         try:
+            index = index + 1
             fwAddress = address + ":" + fw['fwPort']
             fwUser = fw['fwUser']
             fwPassword = fw['fwPassword']
@@ -167,6 +169,7 @@ async def loginToAPI(request: Request, res: Response, fwList: str = Form(...), s
 
             if response['status']['success'] == True:
                 session_data.fwID = fwList
+                session_data.fwIndex = index
 
                 await backend.update(session_id, session_data)
                 return RedirectResponse("/portal", status_code=301, headers=res.headers)
@@ -175,20 +178,19 @@ async def loginToAPI(request: Request, res: Response, fwList: str = Form(...), s
     raise HTTPException(403, "Erro ao conectar no firewall!")
 
 @app.get("/logout", dependencies=[Depends(cookie)])
-def logoutFromAPI(session_data: SessionData = Depends(verifier)):
+def logoutFromAPI(res: Response, session_data: SessionData = Depends(verifier)):
     fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
-    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+    fwAddress = fwCredentials['fwAddress'][session_data.fwIndex] + ":" + fwCredentials['fwPort']
     response = snwl.fwLogout(fwAddress, False)
+    
+    if response['status']['success'] == True:
 
-    if response.status_code == 200:
-        return PlainTextResponse("Logout realizado com sucesso!")
-    else:
-        return PlainTextResponse(f"Error {response.text}")
+        return RedirectResponse("/portal", status_code=301, headers=res.headers)
 
 @app.get("/addtolist", dependencies=[Depends(cookie)])
 def addToList(request: Request, session_data: SessionData = Depends(verifier)):
     fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
-    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+    fwAddress = fwCredentials['fwAddress'][session_data.fwIndex] + ":" + fwCredentials['fwPort']
     response = snwl.getCFSLists(fwAddress, False)
 
     if hasattr(response, "status_code") == True:
@@ -199,7 +201,7 @@ def addToList(request: Request, session_data: SessionData = Depends(verifier)):
 @app.post("/addtolist", dependencies=[Depends(cookie)])
 async def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: str = Form(...), mode: str = Form(...), session_data: SessionData = Depends(verifier)):
     fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
-    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+    fwAddress = fwCredentials['fwAddress'][session_data.fwIndex] + ":" + fwCredentials['fwPort']
 
     if mode == 'domain':
         # url validations: remove protocols and subdomains
@@ -220,7 +222,7 @@ async def addToList(request: Request, cfsListNames: str = Form(...), uriToAdd: s
 @app.get("/removefromlist", dependencies=[Depends(cookie)])
 def removeFromList(request: Request, session_data: SessionData = Depends(verifier)):
     fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
-    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+    fwAddress = fwCredentials['fwAddress'][session_data.fwIndex] + ":" + fwCredentials['fwPort']
     response = snwl.getCFSLists(fwAddress, False)
 
     if hasattr(response, "status_code") == True:
@@ -231,7 +233,7 @@ def removeFromList(request: Request, session_data: SessionData = Depends(verifie
 @app.post("/removefromlist", dependencies=[Depends(cookie)])
 def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...), session_data: SessionData = Depends(verifier)):
     fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
-    fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
+    fwAddress = fwCredentials['fwAddress'][session_data.fwIndex] + ":" + fwCredentials['fwPort']
 
     response = snwl.removeFromCFS(fwAddress, cfsListName, uriToDel, False)
     
