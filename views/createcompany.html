@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar empresa</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <form method="POST" action="/createcompany">
+        <label for="companyName">Nome da empresa</label>
+        <input type="text" name="companyName" id="companyName">
+        <br><br>
+        <label for="companyCNPJ">CNPJ da empresa (somente números)</label>
+        <input type="text" name="companyCNPJ" id="companyCNPJ">
+        <br><br>
+        <button>Cadastrar</button>
+    </form>
+</body>
+</html>
