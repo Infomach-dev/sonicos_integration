@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar firewall</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <h1>Cadastro de novo Firewall</h1>
+    <form id="form" method="POST" action="/addfirewall">
+        <label for="companyID">Empresa</label> <br>
+        <select name="companyID" id="companyID">
+            {% for company in companies %}
+                <option name="companyID" value="{{company['companyID']}}">{{company['companyName']}}</option>
+            {% endfor %}
+        </select>
+        <br><br>
+        <label for="commonName">Nome do Firewall</label> <br>
+        <input type="text" name="fwCommonName" id="fwCommonName">
+        <br><br>
+        <div id="fwAddresses">
+            <label for="address">Endereço</label> <br>
+            <input type="text" name="address" id="address"> <br>
+        </div>
+        <button type="button" onclick="addField()" >Novo endereço</button> <br> <br>
+        <label for="user">Porta de conexão</label> <br>
+        <input type="text" name="port" id="port"> <br> <br>
+        <label for="user">Usuário</label> <br>
+        <input type="text" name="user" id="user"> <br> <br>
+        <label for="user">Senha</label> <br>
+        <input type="password" name="password" id="password">
+        <br><br>
+        <button>Cadastrar</button>
+    </form>
+</body>
+
+<script>
+    function addField() {
+        var input = document.createElement("input")
+        input.setAttribute('type', 'text')
+        input.setAttribute('name', 'address')
+        
+        var parent = document.getElementById('fwAddresses')
+        parent.appendChild(input)
+        var br = document.createElement("br")
+        parent.appendChild(br)
+    }
+</script>
+
+</html>

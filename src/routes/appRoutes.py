@@ -339,3 +339,25 @@ def addCompany(request: Request, res: Response, companyName: str = Form(...), co
     else:
         db.companiesCollection.insert_one({'companyID': companyID, 'companyName': companyName, 'companyCNPJ': companyCNPJ})
         return RedirectResponse("/portal", status_code=301, headers=res.headers)
+
+@app.get("/addfirewall", dependencies=[Depends(cookie)])
+def addFirewall(request: Request, session_data: SessionData = Depends(verifier)):
+    userDocument = db.usersCollection.find_one({'username': session_data.username})
+    userGroups = userDocument['group']
+
+    if userGroups != "superadmin":
+        return PlainTextResponse("Seu usuário não é admin!")
+    else:
+        companies = db.companiesCollection.find({})
+        return templates.TemplateResponse("/addfirewall.html", {'request': request, 'companies': companies})
+
+@app.post("/addfirewall", dependencies=[Depends(cookie)])
+def addFirewall(request: Request, res: Response, companyID: str = Form(...), fwCommonName: str = Form(...), address: list = Form(...), port: str = Form(...), user: str = Form(...), password: str = Form(...), session_data: SessionData = Depends(verifier)):
+    userDocument = db.usersCollection.find_one({'username': session_data.username})
+    userGroups = userDocument['group']
+
+    if userGroups != "superadmin":
+        return PlainTextResponse("Seu usuário não é admin!")
+    else:    
+        db.firewallsCollection.insert_one({'fwAddress': address, 'fwPort': port, 'fwUser': user, 'fwPassword': password, 'companyID': companyID, 'fwCommonName': fwCommonName})
+        return RedirectResponse("/portal", status_code=301, headers=res.headers)
