@@ -152,26 +152,27 @@ async def loginToPortal(request: Request, response: Response, username: str = Fo
 async def loginToAPI(request: Request, res: Response, fwList: str = Form(...), session_data: SessionData = Depends(verifier), session_id: UUID = Depends(cookie)):
 
     fw = db.firewallsCollection.find_one({'_id': ObjectId(fwList)})
-    fwAddress = fw['fwAddress'] + ":" + fw['fwPort']
-    fwUser = fw['fwUser']
-    fwPassword = fw['fwPassword']
 
-    # protocol validation at firewall address
-    if fwAddress.find("https://") == -1:
-        fwAddress = ("https://" + fwAddress)
+    for address in fw['fwAddress']:
+        try:
+            fwAddress = address + ":" + fw['fwPort']
+            fwUser = fw['fwUser']
+            fwPassword = fw['fwPassword']
 
-    try:
-        response = snwl.fwLogin(fwAddress, fwUser, fwPassword, False)
-    except:
-        raise HTTPException(403, "Erro ao conectar no firewall!")
+            # protocol validation at firewall address
+            if fwAddress.find("https://") == -1:
+                fwAddress = ("https://" + fwAddress)
 
-    if response['status']['success'] == True:
-        session_data.fwID = fwList
+            response = snwl.fwLogin(fwAddress, fwUser, fwPassword, False)
 
-        await backend.update(session_id, session_data)
-        return RedirectResponse("/portal", status_code=301, headers=res.headers)
-    else:
-        return PlainTextResponse(f"Error: {response}")
+            if response['status']['success'] == True:
+                session_data.fwID = fwList
+
+                await backend.update(session_id, session_data)
+                return RedirectResponse("/portal", status_code=301, headers=res.headers)
+        except:
+            continue
+    raise HTTPException(403, "Erro ao conectar no firewall!")
 
 @app.get("/logout", dependencies=[Depends(cookie)])
 def logoutFromAPI(session_data: SessionData = Depends(verifier)):
@@ -251,7 +252,7 @@ def portal(request: Request, session_data: SessionData = Depends(verifier)):
     if userDocument['group'] == 'superadmin':
         isSuperAdmin = True
 
-    if userDocument['group'] == 'admin':
+    if userDocument['group'] == 'admin' or 'superadmin':
         fwList = db.firewallsCollection.find({})
     else:
         fwList = db.firewallsCollection.find({'companyID': userCompanyID})
