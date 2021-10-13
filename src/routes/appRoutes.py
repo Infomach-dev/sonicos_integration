@@ -232,10 +232,6 @@ def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...), sess
     fwCredentials = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
     fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
 
-    # url validations: remove protocols and subdomains
-    cleanUri = tldextract.extract(uriToDel)
-    uriToDel = (cleanUri.domain + '.' + cleanUri.suffix)
-
     response = snwl.removeFromCFS(fwAddress, cfsListName, uriToDel, False)
     
     if response['status']['success'] == True:
@@ -269,4 +265,43 @@ def configmode(request: Request, session_data: SessionData = Depends(verifier)):
     fwAddress = fwCredentials['fwAddress'] + ":" + fwCredentials['fwPort']
 
     response = snwl.configMode(fwAddress, False)
-    print(response)
+
+# Admin routes -------------------------------------------------------------------------
+@app.get("/admin", dependencies=[Depends(cookie)])
+def admin(request: Request, session_data: SessionData = Depends(verifier)):
+    userDocument = db.usersCollection.find_one({'username': session_data.username})
+    userGroups = userDocument['group']
+
+    if userGroups != "superadmin":
+        return PlainTextResponse("Seu usuário não é admin!")
+    else:
+        return templates.TemplateResponse("admin.html", {"request": request})
+
+@app.get("/createuser", dependencies=[Depends(cookie)])
+def createUser(request: Request, session_data: SessionData = Depends(verifier)):
+    userDocument = db.usersCollection.find_one({'username': session_data.username})
+    userGroups = userDocument['group']
+
+    companies = db.companiesCollection.find({})
+
+    if userGroups != "superadmin":
+        return PlainTextResponse("Seu usuário não é admin!")
+    else:
+        return templates.TemplateResponse("createuser.html", {"request": request, "companies": companies})
+
+@app.post("/createuser", dependencies=[Depends(cookie)])
+def createUser(request: Request, companyID: str = Form(...), name: str = Form(...), username: str = Form(...), password: str = Form(...), group: str = Form(...), session_data: SessionData = Depends(verifier)):
+    userDocument = db.usersCollection.find_one({'username': session_data.username})
+    userGroups = userDocument['group']
+
+    if userGroups != "superadmin":
+        return PlainTextResponse("Seu usuário não é admin!")
+    else:
+        validateUser = db.usersCollection.find_one({"username": username})
+        if validateUser:
+            return PlainTextResponse("Usuário já existe! Escolha outro por favor")
+        else:
+            hasher = PasswordHasher()
+            password = hasher.hash(password)
+
+            db.usersCollection.insert_one({'companyID': companyID, 'name': name, 'username': username, 'password': password, 'group': group})
