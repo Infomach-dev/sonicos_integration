@@ -33,8 +33,10 @@
         <a href="/showcfslists">
             <button>Ver listas</button>
         </a>
+        {% if isSuperAdmin %}
         <a href="/admin">
             <button>Painel Administrativo</button>
         </a>
+        {% endif %}
 </body>
 </html>

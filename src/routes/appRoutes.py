@@ -246,6 +246,10 @@ def removeFromList(cfsListName: str = Form(...), uriToDel: str = Form(...), sess
 def portal(request: Request, session_data: SessionData = Depends(verifier)):
     userDocument = db.usersCollection.find_one({'username': session_data.username})
     userCompanyID = userDocument['companyID']
+    isSuperAdmin = False
+
+    if userDocument['group'] == 'superadmin':
+        isSuperAdmin = True
 
     if userDocument['group'] == 'admin':
         fwList = db.firewallsCollection.find({})
@@ -255,9 +259,9 @@ def portal(request: Request, session_data: SessionData = Depends(verifier)):
     if session_data.fwID != None:
         connectedFw = db.firewallsCollection.find_one({'_id': ObjectId(session_data.fwID)})
         fwCommonName = connectedFw['fwCommonName']
-        return templates.TemplateResponse("portal.html", {"request": request, "fwList": fwList, "fwCommonName": fwCommonName})
+        return templates.TemplateResponse("portal.html", {"request": request, "fwList": fwList, "fwCommonName": fwCommonName, "isSuperAdmin": isSuperAdmin})
     else:
-        return templates.TemplateResponse("portal.html", {"request": request, "fwList": fwList})
+        return templates.TemplateResponse("portal.html", {"request": request, "fwList": fwList, "isSuperAdmin": isSuperAdmin})
 
 @app.get("/configmode", dependencies=[Depends(cookie)])
 def configmode(request: Request, session_data: SessionData = Depends(verifier)):
