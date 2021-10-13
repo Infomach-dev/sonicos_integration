@@ -15,10 +15,16 @@
         {% for uriListName in uriLists['uri_list_object'] %}
             <option> {{uriListName['name']}}
         {% endfor %}
-        </select> <br>
+        </select> <br> <br>
+        <label for="uriToAdd">Para liberar um domínio, preencha abaixo:</label> <br>
+        <input type="text" name="uriToAdd" id="uriToAdd" placeholder="infomach.com.br"> <br> <br>
 
-        <label for="uriToAdd">Qual o domínio do site a ser liberado?</label> <br>
-        <input type="text" name="uriToAdd" id="uriToAdd" placeholder="infomach.com.br"> <br>
+        <p>Escolha se deseja liberar a url completa ou apenas o domínio:</p>
+        <input type="radio" name="mode" id="FQDN" value="FQDN">
+        <label for="FQDN">FQDN</label> <br>
+        <input type="radio" name="mode" id="domain" value="domain" checked>
+        <label for="domain">Domínio</label> <br> <br>
+
         <button>Adicionar</button>
     </form>
 </body>
