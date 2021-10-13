@@ -290,7 +290,7 @@ def createUser(request: Request, session_data: SessionData = Depends(verifier)):
         return templates.TemplateResponse("createuser.html", {"request": request, "companies": companies})
 
 @app.post("/createuser", dependencies=[Depends(cookie)])
-def createUser(request: Request, companyID: str = Form(...), name: str = Form(...), username: str = Form(...), password: str = Form(...), group: str = Form(...), session_data: SessionData = Depends(verifier)):
+def createUser(request: Request, res: Response, companyID: str = Form(...), name: str = Form(...), username: str = Form(...), password: str = Form(...), group: str = Form(...), session_data: SessionData = Depends(verifier)):
     userDocument = db.usersCollection.find_one({'username': session_data.username})
     userGroups = userDocument['group']
 
@@ -305,3 +305,32 @@ def createUser(request: Request, companyID: str = Form(...), name: str = Form(..
             password = hasher.hash(password)
 
             db.usersCollection.insert_one({'companyID': companyID, 'name': name, 'username': username, 'password': password, 'group': group})
+            return RedirectResponse("/portal", status_code=301, headers=res.headers)
+
+@app.get("/createcompany", dependencies=[Depends(cookie)])
+def createCompany(request: Request, session_data: SessionData = Depends(verifier)):
+    userDocument = db.usersCollection.find_one({'username': session_data.username})
+    userGroups = userDocument['group']
+
+    if userGroups != "superadmin":
+        return PlainTextResponse("Seu usuário não é admin!")
+    else:
+        return templates.TemplateResponse("createcompany.html", {"request": request})
+
+@app.post("/createcompany", dependencies=[Depends(cookie)])
+def createCompany(request: Request, res: Response, companyName: str = Form(...), companyCNPJ: str = Form(...), session_data: SessionData = Depends(verifier)):
+    userDocument = db.usersCollection.find_one({'username': session_data.username})
+    userGroups = userDocument['group']
+
+    if userGroups != "superadmin":
+        return PlainTextResponse("Seu usuário não é admin!")
+    else:
+        countCompanies = db.companiesCollection.count_documents({})
+        companyID = str((countCompanies + 1))
+        searchCNPJ = db.companiesCollection.find_one({'companyCNPJ': companyCNPJ})
+    
+    if searchCNPJ:
+        return PlainTextResponse("Essa empresa já foi cadastrada!")
+    else:
+        db.companiesCollection.insert_one({'companyID': companyID, 'companyName': companyName, 'companyCNPJ': companyCNPJ})
+        return RedirectResponse("/portal", status_code=301, headers=res.headers)
