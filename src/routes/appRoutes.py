@@ -71,12 +71,15 @@ class BasicVerifier(SessionVerifier[UUID, SessionData]):
         """If the session exists, it is valid"""
         return True
 
+class RedirectException(Exception):
+    def __init__(self, name: str):
+        self.name = name
 
 verifier = BasicVerifier(
     identifier="general_verifier",
     auto_error=True,
     backend=backend,
-    auth_http_exception=HTTPException(status_code=403, detail="invalid session"),
+    auth_http_exception=RedirectException("name")
 )
 
 app = FastAPI()
@@ -84,6 +87,10 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="views")
+
+@app.exception_handler(RedirectException)
+async def redirect_exception_handler(request: Request, exc: RedirectException):
+    return RedirectResponse("/", status_code=301)
 
 @app.get("/whoami", dependencies=[Depends(cookie)])
 async def whoami(session_data: SessionData = Depends(verifier)):
