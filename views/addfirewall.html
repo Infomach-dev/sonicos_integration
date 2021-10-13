@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="static/styles.css">
 </head>
 <body>
-    <h1>Cadastro de novo Firewall</h1>
+    <h1>Cadastrar novo Firewall</h1>
     <form id="form" method="POST" action="/addfirewall">
         <label for="companyID">Empresa</label> <br>
         <select name="companyID" id="companyID">
@@ -33,6 +33,9 @@
         <input type="password" name="password" id="password">
         <br><br>
         <button>Cadastrar</button>
+        <a href="/admin">
+            <button type="button">Voltar</button>
+        </a>
     </form>
 </body>
 

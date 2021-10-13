@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="static/styles.css">
 </head>
 <body>
+    <h1>Cadastrar novo usuário</h1>
     <form method="POST" action="/createuser">
         <label for="company">Nome da empresa</label>
         <select name="companyID" id="companyID">
@@ -30,6 +31,9 @@
         </select>
         <br>
         <button>Cadastrar</button>
+        <a href="/admin">
+            <button type="button">Voltar</button>
+        </a>
     </form>
 </body>
 </html>

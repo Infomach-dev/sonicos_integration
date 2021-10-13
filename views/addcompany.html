@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="static/styles.css">
 </head>
 <body>
+    <h1>Cadastrar nova empresa</h1>
     <form method="POST" action="/createcompany">
         <label for="companyName">Nome da empresa</label>
         <input type="text" name="companyName" id="companyName">
@@ -16,6 +17,9 @@
         <input type="text" name="companyCNPJ" id="companyCNPJ">
         <br><br>
         <button>Cadastrar</button>
+        <a href="/admin">
+            <button type="button">Voltar</button>
+        </a>
     </form>
 </body>
 </html>
