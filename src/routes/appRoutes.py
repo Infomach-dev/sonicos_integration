@@ -282,8 +282,8 @@ def admin(request: Request, session_data: SessionData = Depends(verifier)):
     else:
         return templates.TemplateResponse("admin.html", {"request": request})
 
-@app.get("/createuser", dependencies=[Depends(cookie)])
-def createUser(request: Request, session_data: SessionData = Depends(verifier)):
+@app.get("/adduser", dependencies=[Depends(cookie)])
+def addUser(request: Request, session_data: SessionData = Depends(verifier)):
     userDocument = db.usersCollection.find_one({'username': session_data.username})
     userGroups = userDocument['group']
 
@@ -292,10 +292,10 @@ def createUser(request: Request, session_data: SessionData = Depends(verifier)):
     if userGroups != "superadmin":
         return PlainTextResponse("Seu usuário não é admin!")
     else:
-        return templates.TemplateResponse("createuser.html", {"request": request, "companies": companies})
+        return templates.TemplateResponse("adduser.html", {"request": request, "companies": companies})
 
-@app.post("/createuser", dependencies=[Depends(cookie)])
-def createUser(request: Request, res: Response, companyID: str = Form(...), name: str = Form(...), username: str = Form(...), password: str = Form(...), group: str = Form(...), session_data: SessionData = Depends(verifier)):
+@app.post("/adduser", dependencies=[Depends(cookie)])
+def addUser(request: Request, res: Response, companyID: str = Form(...), name: str = Form(...), username: str = Form(...), password: str = Form(...), group: str = Form(...), session_data: SessionData = Depends(verifier)):
     userDocument = db.usersCollection.find_one({'username': session_data.username})
     userGroups = userDocument['group']
 
@@ -312,18 +312,18 @@ def createUser(request: Request, res: Response, companyID: str = Form(...), name
             db.usersCollection.insert_one({'companyID': companyID, 'name': name, 'username': username, 'password': password, 'group': group})
             return RedirectResponse("/portal", status_code=301, headers=res.headers)
 
-@app.get("/createcompany", dependencies=[Depends(cookie)])
-def createCompany(request: Request, session_data: SessionData = Depends(verifier)):
+@app.get("/addcompany", dependencies=[Depends(cookie)])
+def addCompany(request: Request, session_data: SessionData = Depends(verifier)):
     userDocument = db.usersCollection.find_one({'username': session_data.username})
     userGroups = userDocument['group']
 
     if userGroups != "superadmin":
         return PlainTextResponse("Seu usuário não é admin!")
     else:
-        return templates.TemplateResponse("createcompany.html", {"request": request})
+        return templates.TemplateResponse("addcompany.html", {"request": request})
 
-@app.post("/createcompany", dependencies=[Depends(cookie)])
-def createCompany(request: Request, res: Response, companyName: str = Form(...), companyCNPJ: str = Form(...), session_data: SessionData = Depends(verifier)):
+@app.post("/addcompany", dependencies=[Depends(cookie)])
+def addCompany(request: Request, res: Response, companyName: str = Form(...), companyCNPJ: str = Form(...), session_data: SessionData = Depends(verifier)):
     userDocument = db.usersCollection.find_one({'username': session_data.username})
     userGroups = userDocument['group']
 
