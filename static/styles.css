@@ -5,10 +5,19 @@
     font-family: 'Roboto';
 }
 
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 4rem;
+}
+
 button {
-    display: flexbox;
     position: relative;
     border: none;
+    margin-bottom: .2rem;
+    align-items: flex-start;
     background-color: rgba(231, 20, 13, 0.712);
 }
 
