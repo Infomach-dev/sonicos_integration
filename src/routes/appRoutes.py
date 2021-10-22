@@ -82,7 +82,7 @@ verifier = BasicVerifier(
     auth_http_exception=RedirectException("name")
 )
 
-app = FastAPI()
+app = FastAPI(openapi_url=None, docs_url=None, redoc_url=None)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
